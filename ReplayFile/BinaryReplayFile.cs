@@ -20,12 +20,9 @@ public class BinaryReplayFile
     public string ReplayLength => TimeSpan.FromSeconds(ReplayLengthInFrames / 60f).ToString(@"mm\m\ ss\s");
     public string CustomName = "";
     public GameRules Rules;
-    // public byte PlayerCount;
-    // public byte[] PlayerStars = new byte[10];
-    // public byte[] PlayerTeams = new byte[10];
-    // public string[] PlayerNames = new string[10];
     public ReplayPlayerInfo[] Players = [];
     public sbyte WinningTeam = -1;
+    public ReplayPlayerInfo WinningPlayer => Rules.IsTeamsEnabled ? new ReplayPlayerInfo() : Players[WinningTeam];
 
     public BinaryReplayFile(Stream input)
     {
@@ -34,7 +31,7 @@ public class BinaryReplayFile
 
         try
         {
-            reader.Read(HeaderBuffer, 0, MagicHeaderLength);
+            reader.Read(HeaderBuffer);
             var readString = Encoding.ASCII.GetString(HeaderBuffer);
             if (readString != MagicHeader)
             {
@@ -73,13 +70,14 @@ public class BinaryReplayFile
                     Team = reader.ReadByte(),
                     Character = reader.ReadByte(),
                 };
+                reader.ReadInt32();
             }
                 
             WinningTeam = reader.ReadSByte();
 
             Valid = true;
         }
-        catch (Exception)
+        catch (Exception e)
         {
             Valid = false;
         }
