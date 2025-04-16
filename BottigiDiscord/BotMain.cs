@@ -27,6 +27,8 @@ public static class BotMain
         GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.MessageContent
     };
     private static readonly DiscordSocketClient Bot = new(Intents);
+
+    private static readonly HttpClient Downloader = new();
     
     public static async Task Main(string[] args)
     {
@@ -60,8 +62,7 @@ public static class BotMain
     private static async Task SendReplayReply(SocketMessage msg, Attachment replayAttachment)
     {
         var channel = msg.Channel;
-        using var client = new HttpClient();
-        await using var stream = await client.GetStreamAsync(replayAttachment.Url);
+        await using var stream = await Downloader.GetStreamAsync(replayAttachment.Url);
         var replay = new BinaryReplayFile(stream);
         if (!replay.Valid)
         {
