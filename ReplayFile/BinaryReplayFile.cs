@@ -6,40 +6,36 @@ namespace ReplayFile;
 
 public class BinaryReplayFile
 {
+    public const int SolutionVersion = 0;
     private const string MagicHeader = "MvLO-RP";
     private static int MagicHeaderLength => Encoding.ASCII.GetByteCount(MagicHeader);
     private static readonly byte[] HeaderBuffer = new byte[MagicHeaderLength];
 
-    public long FileSize;
-    public bool Valid;
-    public GameVersion Version;
-    public long UnixTimestamp;
-    public string ReplayDate => DateTimeOffset.FromUnixTimeSeconds(UnixTimestamp).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss");
-    public int InitialFrameNumber;
-    public int ReplayLengthInFrames;
-    public string ReplayLength => TimeSpan.FromSeconds(ReplayLengthInFrames / 60f).ToString(@"mm\m\ ss\s");
-    public string CustomName = "";
-    public GameRules Rules;
-    public ReplayPlayerInfo[] Players = [];
-    public sbyte WinningTeam = -1;
-    public ReplayPlayerInfo WinningPlayer => Rules.IsTeamsEnabled ? new ReplayPlayerInfo() : Players[WinningTeam];
+    public readonly long FileSize;
+    public readonly bool Valid;
+    public readonly GameVersion Version;
+    private readonly long _unixTimestamp;
+    public string ReplayDate => DateTimeOffset.FromUnixTimeSeconds(_unixTimestamp).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss");
+    private readonly int _replayLengthInFrames;
+    public string ReplayLength => TimeSpan.FromSeconds(_replayLengthInFrames / 60f).ToString(@"m\m\ ss\s");
+    public readonly string CustomName = "";
+    public readonly GameRules Rules;
+    public readonly ReplayPlayerInfo[] Players = [];
+    public readonly sbyte WinningTeam = -1;
+    public ReplayPlayerInfo? WinningPlayer => Rules.IsTeamsEnabled ? null : Players[WinningTeam];
 
     public BinaryReplayFile(Stream input)
     {
         using var reader = new BinaryReader(input, Encoding.ASCII);
-        FileSize = reader.BaseStream.Length;
+        FileSize = reader.BaseStream.CanSeek ? reader.BaseStream.Length : -1;
 
         try
         {
-            reader.Read(HeaderBuffer);
+            var read = reader.Read(HeaderBuffer);
+            if (read != MagicHeaderLength) return;
             var readString = Encoding.ASCII.GetString(HeaderBuffer);
-            if (readString != MagicHeader)
-            {
-                Valid = false;
-                return;
-            }
+            if (readString != MagicHeader) return;
 
-            // Version = reader.ReadByte();
             Version = new GameVersion
             {
                 Major = reader.ReadByte(),
@@ -47,9 +43,9 @@ public class BinaryReplayFile
                 Patch = reader.ReadByte(),
                 Hotfix = reader.ReadByte(),
             };
-            UnixTimestamp = reader.ReadInt64();
-            InitialFrameNumber = reader.ReadInt32();
-            ReplayLengthInFrames = reader.ReadInt32();
+            _unixTimestamp = reader.ReadInt64();
+            reader.ReadInt32(); // InitialFrameNumber
+            _replayLengthInFrames = reader.ReadInt32();
             CustomName = reader.ReadString();
 
 #pragma warning disable SYSLIB0011
@@ -70,16 +66,16 @@ public class BinaryReplayFile
                     Team = reader.ReadByte(),
                     Character = reader.ReadByte(),
                 };
-                reader.ReadInt32();
+                reader.ReadInt32(); // Quantum Ref
             }
                 
             WinningTeam = reader.ReadSByte();
 
             Valid = true;
         }
-        catch (Exception e)
+        catch (Exception)
         {
-            Valid = false;
+            // unexpected data. valid is false
         }
     }
 }
@@ -87,7 +83,7 @@ public class BinaryReplayFile
 [Serializable]
 public struct GameRules
 {
-    private static readonly Dictionary<long, string> StageNames = new Dictionary<long, string>
+    private static readonly Dictionary<long, string> StageNames = new()
     {
         {438935048561577377, "Grassland"},
         {422133218138107384, "Bricks"},
@@ -158,6 +154,9 @@ public struct ReplayPlayerInfo
     public byte FinalStarCount;
     public byte Team;
     public byte Character;
+
+    public static bool operator ==(ReplayPlayerInfo left, ReplayPlayerInfo right) => left.Username.Equals(right.Username);
+    public static bool operator !=(ReplayPlayerInfo left, ReplayPlayerInfo right) => !(left == right);
 }
 
 public struct GameVersion
