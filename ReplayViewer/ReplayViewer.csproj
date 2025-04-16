@@ -1,0 +1,76 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <EnableUnsafeBinaryFormatterSerialization>true</EnableUnsafeBinaryFormatterSerialization>
+        <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <ProjectReference Include="..\ReplayFile\ReplayFile.csproj" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="resources\LUT\FPSinCos.bytes" />
+      <Content Include="resources\LUT\FPSinCos.bytes">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <None Remove="resources\LUT\FPAtan.bytes" />
+      <Content Include="resources\LUT\FPAtan.bytes">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <None Remove="resources\LUT\FPAsin.bytes" />
+      <Content Include="resources\LUT\FPAsin.bytes">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <None Remove="resources\LUT\FPSqrt.bytes" />
+      <Content Include="resources\LUT\FPSqrt.bytes">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <None Remove="resources\LUT\FPAcos.bytes" />
+      <Content Include="resources\LUT\FPAcos.bytes">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <None Remove="resources\LUT\FPCos.bytes" />
+      <Content Include="resources\LUT\FPCos.bytes">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <None Remove="resources\db.json" />
+      <Content Include="resources\db.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <None Remove="resources\LUT\FPSin.bytes" />
+      <Content Include="resources\LUT\FPSin.bytes">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <None Remove="resources\LUT\FPTan.bytes" />
+      <Content Include="resources\LUT\FPTan.bytes">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Reference Include="Quantum.Deterministic">
+        <HintPath>..\MvLOAssemblies\Quantum.Deterministic.dll</HintPath>
+      </Reference>
+      <Reference Include="Quantum.Engine">
+        <HintPath>..\MvLOAssemblies\Quantum.Engine.dll</HintPath>
+      </Reference>
+      <Reference Include="Quantum.Json">
+        <HintPath>..\MvLOAssemblies\Quantum.Json.dll</HintPath>
+      </Reference>
+      <Reference Include="Quantum.Log">
+        <HintPath>..\MvLOAssemblies\Quantum.Log.dll</HintPath>
+      </Reference>
+      <Reference Include="Quantum.Simulation">
+        <HintPath>..\MvLOAssemblies\Quantum.Simulation.dll</HintPath>
+      </Reference>
+    </ItemGroup>
+
+</Project>

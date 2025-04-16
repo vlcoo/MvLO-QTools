@@ -16,15 +16,21 @@ public class BinaryReplayFile
     public readonly GameVersion Version;
     private readonly long _unixTimestamp;
     public string ReplayDate => DateTimeOffset.FromUnixTimeSeconds(_unixTimestamp).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss");
-    private readonly int _replayLengthInFrames;
-    public string ReplayLength => TimeSpan.FromSeconds(_replayLengthInFrames / 60f).ToString(@"m\m\ ss\s");
+    protected readonly int InitialFrameNumber;
+    protected readonly int ReplayLengthInFrames;
+    public string ReplayLength => TimeSpan.FromSeconds(ReplayLengthInFrames / 60f).ToString(@"m\m\ ss\s");
     public readonly string CustomName = "";
     public readonly GameRules Rules;
     public readonly ReplayPlayerInfo[] Players = [];
     public readonly sbyte WinningTeam = -1;
     public ReplayPlayerInfo? WinningPlayer => Rules.IsTeamsEnabled ? null : Players[WinningTeam];
+    
+    protected byte[] CompressedRuntimeConfigData;
+    protected byte[] CompressedDeterministicConfigData;
+    protected byte[] CompressedInitialFrameData;
+    protected byte[] CompressedInputData;
 
-    public BinaryReplayFile(Stream input)
+    public BinaryReplayFile(Stream input, bool readQData = false)
     {
         using var reader = new BinaryReader(input, Encoding.ASCII);
         FileSize = reader.BaseStream.CanSeek ? reader.BaseStream.Length : -1;
@@ -44,8 +50,8 @@ public class BinaryReplayFile
                 Hotfix = reader.ReadByte(),
             };
             _unixTimestamp = reader.ReadInt64();
-            reader.ReadInt32(); // InitialFrameNumber
-            _replayLengthInFrames = reader.ReadInt32();
+            InitialFrameNumber = reader.ReadInt32();
+            ReplayLengthInFrames = reader.ReadInt32();
             CustomName = reader.ReadString();
 
 #pragma warning disable SYSLIB0011
@@ -70,6 +76,18 @@ public class BinaryReplayFile
             }
                 
             WinningTeam = reader.ReadSByte();
+
+            if (readQData)
+            {
+                var runtimeConfigLength = reader.ReadInt32();
+                var deterministicConfigLength = reader.ReadInt32();
+                var initialFrameLength = reader.ReadInt32();
+                var inputDataLength = reader.ReadInt32();
+                CompressedRuntimeConfigData = reader.ReadBytes(runtimeConfigLength);
+                CompressedDeterministicConfigData = reader.ReadBytes(deterministicConfigLength);
+                CompressedInitialFrameData = reader.ReadBytes(initialFrameLength);
+                CompressedInputData = reader.ReadBytes(inputDataLength);
+            }
 
             Valid = true;
         }
@@ -99,18 +117,18 @@ public struct GameRules
         {372234066173501830, "Beach"},
     };
     
-    private QAsset Stage;
-    public string StageName => StageNames.GetValueOrDefault(Stage.Id.Value, "unknown");
+    private QAsset _stage;
+    public string StageName => StageNames.GetValueOrDefault(_stage.Id.Value, "unknown");
     public int StarsToWin;
     public int CoinsForPowerup;
     public int Lives;
     public int TimerSeconds;
-    private QBool TeamsEnabled;
-    public bool IsTeamsEnabled => TeamsEnabled.Value > 0;
-    private QBool CustomPowerupsEnabled;
-    public bool IsCustomPowerupsEnabled => CustomPowerupsEnabled.Value > 0;
-    private QBool DrawOnTimeUp;
-    public bool IsDrawOnTimeUp => DrawOnTimeUp.Value > 0;
+    private QBool _teamsEnabled;
+    public bool IsTeamsEnabled => _teamsEnabled.Value > 0;
+    private QBool _customPowerupsEnabled;
+    public bool IsCustomPowerupsEnabled => _customPowerupsEnabled.Value > 0;
+    private QBool _drawOnTimeUp;
+    public bool IsDrawOnTimeUp => _drawOnTimeUp.Value > 0;
 
     [Serializable]
     public struct QBool

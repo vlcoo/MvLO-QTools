@@ -4,6 +4,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReplayFile", "ReplayFile\Re
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "BottigiDiscord", "BottigiDiscord\BottigiDiscord.csproj", "{8D85457D-F741-4455-9DAB-046A73D7B9E3}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReplayViewer", "ReplayViewer\ReplayViewer.csproj", "{6834A73F-D044-411D-BF27-A1C18ADA845F}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TesterApp", "TesterApp\TesterApp.csproj", "{60E49B4D-31A4-4925-9C3C-E719F60CEC2A}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -18,5 +22,13 @@ Global
 		{8D85457D-F741-4455-9DAB-046A73D7B9E3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8D85457D-F741-4455-9DAB-046A73D7B9E3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8D85457D-F741-4455-9DAB-046A73D7B9E3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6834A73F-D044-411D-BF27-A1C18ADA845F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6834A73F-D044-411D-BF27-A1C18ADA845F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6834A73F-D044-411D-BF27-A1C18ADA845F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6834A73F-D044-411D-BF27-A1C18ADA845F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{60E49B4D-31A4-4925-9C3C-E719F60CEC2A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{60E49B4D-31A4-4925-9C3C-E719F60CEC2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{60E49B4D-31A4-4925-9C3C-E719F60CEC2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{60E49B4D-31A4-4925-9C3C-E719F60CEC2A}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
