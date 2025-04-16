@@ -1,6 +1,7 @@
 ﻿using Photon.Deterministic;
 using Quantum;
 using ReplayFile;
+using System.Text;
 
 namespace ReplayViewer;
 
@@ -35,6 +36,7 @@ public class BinaryReplayMatch(Stream input) : BinaryReplayFile(input, true)
         // eventDispatcher.Subscribe<EventMarioPlayerTookDamage>(this, _ => E("Player took damage"));
         callbackDispatcher.Subscribe<CallbackSimulateFinished>(this, e =>
         {
+            /*
             var f = e.Game.Frames.Predicted;
             var marios = f.Filter<Transform2D, MarioPlayer>();
             marios.UseCulling = false;
@@ -44,6 +46,8 @@ public class BinaryReplayMatch(Stream input) : BinaryReplayFile(input, true)
                 Console.Write($"{mario->PlayerRef} is at {transform->Position}\t".PadRight(46));
             }
             Console.WriteLine();
+            */
+            DrawGame(e.Frame);
         });
         
         var arguments = new SessionRunner.Arguments
@@ -66,17 +70,54 @@ public class BinaryReplayMatch(Stream input) : BinaryReplayFile(input, true)
         };
         deterministicConfig.ChecksumInterval = 0;
         var runner = SessionRunner.Start(arguments);
-        
+
         while (runner.Session.FramePredicted == null || runner.Session.FramePredicted.Number < maxFrame)
         {
             Thread.Sleep(10);
-            runner.Service(0.1f);
+            runner.Service();
         }
         
         Console.WriteLine("finished!");
 
         runner.Shutdown();
         resourceManager.Dispose();
+    }
+
+    private static readonly StringBuilder builder = new();
+    private static unsafe void DrawGame(Frame f) {
+        var tiles = f.StageTiles;
+
+        builder.Clear();
+        VersusStageData stage = f.FindAsset<VersusStageData>(f.Map.UserAsset);
+        if (tiles != null) {
+            char[,] test = new char[stage.TileDimensions.x, stage.TileDimensions.y];
+            for (int x = 0; x < test.GetLength(0); x++) {
+                for (int y = 0; y < test.GetLength(1); y++) {
+                    test[x, y] = tiles[x + y * stage.TileDimensions.x].HasWorldPolygons(f) ? '#' : ' ';
+                }
+            }
+
+            var all = f.Filter<Transform2D>();
+            all.UseCulling = false;
+            while (all.NextUnsafe(out _, out Transform2D* transform)) {
+                Vector2Int pos = QuantumUtils.WorldToRelativeTile(f, transform->Position);
+                if (pos.x >= 0 && pos.x < test.GetLength(0)
+                    && pos.y >= 0 && pos.y < test.GetLength(1)) {
+                    test[pos.x, pos.y] = 'E';
+                }
+            }
+
+            for (int y = test.GetLength(1) - 1; y >= 0; y--) {
+                for (int x = 0; x < test.GetLength(0); x++) {
+                    builder.Append(test[x, y]);
+                }
+                builder.AppendLine();
+            }
+            builder.Append("Frame #").AppendLine(f.Number.ToString());
+            
+            Console.SetCursorPosition(0, 0);
+            Console.WriteLine(builder.ToString());
+        }
     }
 
     private static void E(string msg)
