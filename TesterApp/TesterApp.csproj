@@ -12,4 +12,8 @@
       <ProjectReference Include="..\ReplayViewer\ReplayViewer.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <PackageReference Include="SkiaSharp" Version="3.119.0-preview.1.2" />
+    </ItemGroup>
+
 </Project>

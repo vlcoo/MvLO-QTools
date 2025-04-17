@@ -13,7 +13,9 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="FFMpegCore" Version="5.2.0" />
       <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+      <PackageReference Include="SkiaSharp" Version="3.119.0-preview.1.2" />
     </ItemGroup>
 
     <ItemGroup>

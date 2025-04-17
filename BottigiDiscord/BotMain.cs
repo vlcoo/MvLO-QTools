@@ -2,6 +2,8 @@
 using Discord;
 using Discord.WebSocket;
 using ReplayFile;
+using ReplayViewer;
+using ReplayViewer.ReplayDrawers;
 
 namespace BottigiDiscord;
 
@@ -56,7 +58,27 @@ public static class BotMain
         {
             if (!attachment.Filename.EndsWith(".mvlreplay")) continue;
             await SendReplayReply(msg, attachment);
+            // await SendReplayVideo(msg, attachment);
         }
+    }
+
+    private static async Task SendReplayVideo(SocketMessage msg, Attachment replayAttachment)
+    {
+        var channel = msg.Channel;
+        await using var stream = await Downloader.GetStreamAsync(replayAttachment.Url);
+        var replay = new BinaryReplayMatch(stream);
+        if (!replay.Valid)
+        {
+            await msg.AddReactionAsync(Emoji.Parse("❔"));
+            return;
+        }
+        
+        await msg.AddReactionAsync(Emoji.Parse("⌛"));
+        var replayDrawer = new VideoReplayDrawer(false);
+        var task = Task.Run(() => replay.Start(replayDrawer));
+        await task;
+        await channel.SendFileAsync(replayDrawer.OutputStream, "replay.mp4");
+        await msg.RemoveReactionAsync(Emoji.Parse("⌛"), Bot.CurrentUser);
     }
 
     private static async Task SendReplayReply(SocketMessage msg, Attachment replayAttachment)

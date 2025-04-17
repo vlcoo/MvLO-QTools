@@ -10,6 +10,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\ReplayFile\ReplayFile.csproj" />
+      <ProjectReference Include="..\ReplayViewer\ReplayViewer.csproj" />
     </ItemGroup>
 
     <ItemGroup>
