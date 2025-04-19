@@ -8,6 +8,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReplayViewer", "ReplayViewe
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TesterApp", "TesterApp\TesterApp.csproj", "{60E49B4D-31A4-4925-9C3C-E719F60CEC2A}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ReplayShellEx", "ReplayShellEx\ReplayShellEx.csproj", "{0FB9884A-DE61-4F46-A6DF-A20C08492B86}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{60E49B4D-31A4-4925-9C3C-E719F60CEC2A}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{60E49B4D-31A4-4925-9C3C-E719F60CEC2A}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{60E49B4D-31A4-4925-9C3C-E719F60CEC2A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0FB9884A-DE61-4F46-A6DF-A20C08492B86}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0FB9884A-DE61-4F46-A6DF-A20C08492B86}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0FB9884A-DE61-4F46-A6DF-A20C08492B86}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0FB9884A-DE61-4F46-A6DF-A20C08492B86}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
