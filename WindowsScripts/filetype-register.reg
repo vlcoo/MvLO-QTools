@@ -1,0 +1,13 @@
+Windows Registry Editor Version 5.00
+
+[HKEY_CLASSES_ROOT\.mvlreplay]
+@="MvLO-Shell.Replay"
+
+[HKEY_CLASSES_ROOT\MvLO-Shell.Replay]
+@="MvLO Match Replay"
+
+[HKEY_CLASSES_ROOT\MvLO-Shell.Replay\DefaultIcon]
+@="C:\\Icons\\mvlo1.ico,0"
+
+[HKEY_CLASSES_ROOT\MvLO-Shell.Replay\shell\open\command]
+@="C:\\Users\\Victor\\Desktop\\mvlo stuff\\openwith-test.bat \"%1\""

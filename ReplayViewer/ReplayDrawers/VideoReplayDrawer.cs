@@ -50,6 +50,8 @@ public class VideoReplayDrawer : ReplayDrawer
         _exportAsFile = exportAsFile;
     }
 
+    public override float Speed => 1f;
+
     public override unsafe void DrawFrame(Frame f)
     {
         var stage = f.FindAsset<VersusStageData>(f.Map.UserAsset);

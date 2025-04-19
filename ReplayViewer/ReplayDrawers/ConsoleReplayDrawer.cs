@@ -6,7 +6,9 @@ namespace ReplayViewer.ReplayDrawers;
 public class ConsoleReplayDrawer : ReplayDrawer
 {
     private static readonly StringBuilder Builder = new();
-    
+
+    public override float Speed => 0f;
+
     public override unsafe void DrawFrame(Frame f)
     {
         var tiles = f.StageTiles;
