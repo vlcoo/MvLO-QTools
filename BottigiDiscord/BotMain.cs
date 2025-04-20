@@ -59,7 +59,7 @@ public static class BotMain
             if (!attachment.Filename.EndsWith(".mvlreplay")) continue;
             await SendReplayReply(msg, attachment);
             // await SendReplayVideo(msg, attachment);
-        }
+        }   
     }
 
     private static async Task SendReplayVideo(SocketMessage msg, Attachment replayAttachment)
@@ -127,7 +127,7 @@ public static class BotMain
         embed.AddField("Lives", replay.Rules.Lives, true);
         embed.AddField("Stars", replay.Rules.StarsToWin, true);
         embed.AddField("Date", replay.ReplayDate, true);
-        embed.AddField("Duration", replay.ReplayLength, true);
+        embed.AddField("Duration", replay.ReplayDuration, true);
         embed.AddField("Participants", $"```ansi\n{playersString}\n```");
         
         await channel.SendMessageAsync(embed: embed.Build());

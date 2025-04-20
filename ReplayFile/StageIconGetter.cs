@@ -20,6 +20,6 @@ public static class StageIconGetter
     
     public static string GetIconUrl(string stageName)
     {
-        return IconUrls.GetValueOrDefault(stageName, "");
+        return IconUrls.TryGetValue(stageName, out var url) ? url : "";
     }
 }

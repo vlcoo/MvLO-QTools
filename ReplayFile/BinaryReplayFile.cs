@@ -1,4 +1,5 @@
-﻿using System.Runtime.Serialization;
+﻿using System.Runtime.InteropServices;
+using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 
@@ -15,10 +16,10 @@ public class BinaryReplayFile
     public readonly bool Valid;
     public readonly GameVersion Version;
     private readonly long _unixTimestamp;
-    public string ReplayDate => DateTimeOffset.FromUnixTimeSeconds(_unixTimestamp).ToLocalTime().ToString("yyyy-MM-dd HH:mm:ss");
+    public string ReplayDate => DateTimeOffset.FromUnixTimeSeconds(_unixTimestamp).ToLocalTime().ToString("yyyy-MM-dd HH:mm");
     protected readonly int InitialFrameNumber;
     protected readonly int ReplayLengthInFrames;
-    public string ReplayLength => TimeSpan.FromSeconds(ReplayLengthInFrames / 60f).ToString(@"m\m\ ss\s");
+    public string ReplayDuration => TimeSpan.FromSeconds(ReplayLengthInFrames / 60f).ToString(@"m\m\ ss\s");
     public readonly string CustomName = "";
     public readonly GameRules Rules;
     public readonly ReplayPlayerInfo[] Players = [];
@@ -37,7 +38,7 @@ public class BinaryReplayFile
 
         try
         {
-            var read = reader.Read(HeaderBuffer);
+            var read = reader.Read(HeaderBuffer, 0, MagicHeaderLength);
             if (read != MagicHeaderLength) return;
             var readString = Encoding.ASCII.GetString(HeaderBuffer);
             if (readString != MagicHeader) return;
@@ -118,7 +119,7 @@ public struct GameRules
     };
     
     private QAsset _stage;
-    public string StageName => StageNames.GetValueOrDefault(_stage.Id.Value, "unknown");
+    public string StageName => StageNames.TryGetValue(_stage.Id.Value, out var name) ? name : "unknown";
     public int StarsToWin;
     public int CoinsForPowerup;
     public int Lives;
@@ -147,6 +148,8 @@ public struct GameRules
     {
         public long Value;
     }
+    
+    public static string PropertyToString(int value) => value > 0 ? value.ToString() : "Off";
 }
 
 public class QuantumBinder : SerializationBinder
