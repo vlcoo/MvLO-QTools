@@ -26,10 +26,10 @@ public class BinaryReplayFile
     public readonly sbyte WinningTeam = -1;
     public ReplayPlayerInfo? WinningPlayer => Rules.IsTeamsEnabled ? null : Players[WinningTeam];
     
-    protected byte[] CompressedRuntimeConfigData;
-    protected byte[] CompressedDeterministicConfigData;
-    protected byte[] CompressedInitialFrameData;
-    protected byte[] CompressedInputData;
+    protected readonly byte[]? CompressedRuntimeConfigData;
+    protected readonly byte[]? CompressedDeterministicConfigData;
+    protected readonly byte[]? CompressedInitialFrameData;
+    protected readonly byte[]? CompressedInputData;
 
     public BinaryReplayFile(Stream input, bool readQData = false)
     {
@@ -118,18 +118,18 @@ public struct GameRules
         {372234066173501830, "Beach"},
     };
     
-    private QAsset _stage;
-    public string StageName => StageNames.TryGetValue(_stage.Id.Value, out var name) ? name : "unknown";
+    private QAsset Stage;
+    public string StageName => StageNames.TryGetValue(Stage.Id.Value, out var name) ? name : "unknown";
     public int StarsToWin;
     public int CoinsForPowerup;
     public int Lives;
     public int TimerSeconds;
-    private QBool _teamsEnabled;
-    public bool IsTeamsEnabled => _teamsEnabled.Value > 0;
-    private QBool _customPowerupsEnabled;
-    public bool IsCustomPowerupsEnabled => _customPowerupsEnabled.Value > 0;
-    private QBool _drawOnTimeUp;
-    public bool IsDrawOnTimeUp => _drawOnTimeUp.Value > 0;
+    private QBool TeamsEnabled;
+    public bool IsTeamsEnabled => TeamsEnabled.Value > 0;
+    private QBool CustomPowerupsEnabled;
+    public bool IsCustomPowerupsEnabled => CustomPowerupsEnabled.Value > 0;
+    private QBool DrawOnTimeUp;
+    public bool IsDrawOnTimeUp => DrawOnTimeUp.Value > 0;
 
     [Serializable]
     public struct QBool

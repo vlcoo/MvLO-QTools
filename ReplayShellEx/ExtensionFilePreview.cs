@@ -1,5 +1,6 @@
 ﻿using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using ReplayFile;
@@ -119,6 +120,7 @@ public class ExtensionFilePreview : SharpPreviewHandler
             pictureMap.SizeMode = PictureBoxSizeMode.Zoom;
             pictureMap.TabIndex = 1;
             pictureMap.TabStop = false;
+            pictureMap.Image = StageIconGetter.GetIconBitmap(replay.Rules.StageName);
             // 
             // labelTitle
             // 
@@ -153,12 +155,12 @@ public class ExtensionFilePreview : SharpPreviewHandler
             tableProperties.Location = new Point(11, 49);
             tableProperties.Name = "tableProperties";
             tableProperties.RowCount = 6;
-            tableProperties.RowStyles.Add(new RowStyle());
-            tableProperties.RowStyles.Add(new RowStyle());
-            tableProperties.RowStyles.Add(new RowStyle());
-            tableProperties.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            tableProperties.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            tableProperties.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
+            tableProperties.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
+            tableProperties.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
+            tableProperties.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
+            tableProperties.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
+            tableProperties.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
+            tableProperties.RowStyles.Add(new RowStyle(SizeType.Absolute, 24F));
             tableProperties.Size = new Size(560, 120);
             tableProperties.TabIndex = 1;
             // 
@@ -312,7 +314,7 @@ public class ExtensionFilePreview : SharpPreviewHandler
             panelParticipants.Size = new Size(560, 40);
             panelParticipants.TabIndex = 3;
 
-            foreach (var player in replay.Players)
+            foreach (var player in replay.Players.Reverse())
             {
                 var hasWon = false;
                 if (replay.Rules.IsTeamsEnabled) hasWon = player.Team == replay.WinningTeam;
@@ -367,7 +369,7 @@ public class ExtensionFilePreview : SharpPreviewHandler
                 };
                 labelCharacter.Location = new Point(3, 0);
                 labelCharacter.Name = "labelCharacter";
-                labelCharacter.Size = new Size(16, 32);
+                labelCharacter.MinimumSize = new Size(20, 32);
                 labelCharacter.TabIndex = 3;
                 labelCharacter.Text = player.Character switch
                 {
@@ -395,9 +397,9 @@ public class ExtensionFilePreview : SharpPreviewHandler
                 labelStarCount.Dock = DockStyle.Right;
                 labelStarCount.Location = new Point(490, 0);
                 labelStarCount.Name = "labelStarCount";
-                labelStarCount.Size = new Size(30, 32);
+                labelStarCount.MinimumSize = new Size(30, 32);
                 labelStarCount.TabIndex = 1;
-                labelStarCount.Text = $"{player.FinalStarCount}★";
+                labelStarCount.Text = $"{player.FinalStarCount} ☆";
                 labelStarCount.TextAlign = ContentAlignment.MiddleCenter;
                 labelStarCount.ForeColor = SystemColors.ControlText;
                 // 
@@ -407,11 +409,11 @@ public class ExtensionFilePreview : SharpPreviewHandler
                 labelWinner.Dock = DockStyle.Right;
                 labelWinner.Location = new Point(526, 0);
                 labelWinner.Name = "labelWinner";
-                labelWinner.Size = new Size(23, 32);
+                labelWinner.MinimumSize = new Size(24, 32);
                 labelWinner.TabIndex = 0;
-                labelWinner.Text = "W";
+                labelWinner.Text = hasWon ? "W" : " ";
                 labelWinner.TextAlign = ContentAlignment.MiddleCenter;
-                labelWinner.ForeColor = hasWon ? Color.Gold : Color.Transparent;
+                labelWinner.ForeColor = Color.Gold;
                 labelWinner.Font = new Font(DefaultFont.FontFamily, DefaultFont.Size, FontStyle.Bold);
                 tableParticipant.ResumeLayout(false);
                 tableParticipant.PerformLayout();

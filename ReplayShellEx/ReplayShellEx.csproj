@@ -58,6 +58,7 @@
         <Compile Include="ExtensionFilePreview.cs" />
         <Compile Include="ExtensionInfoTip.cs" />
         <Compile Include="Properties\AssemblyInfo.cs"/>
+        <Compile Include="StageIconGetter.cs" />
     </ItemGroup>
     <ItemGroup>
       <None Include="mvloShell.snk" />
@@ -68,6 +69,23 @@
         <Project>{92ee98c2-7064-40e5-b374-7438238ea122}</Project>
         <Name>ReplayFile</Name>
       </ProjectReference>
+    </ItemGroup>
+    <ItemGroup>
+      <Folder Include="resources\" />
+    </ItemGroup>
+    <ItemGroup>
+      <EmbeddedResource Include="resources\stage-bitmaps\stage-beach.bmp" />
+      <EmbeddedResource Include="resources\stage-bitmaps\stage-bonus.bmp" />
+      <EmbeddedResource Include="resources\stage-bitmaps\stage-brick.bmp" />
+      <EmbeddedResource Include="resources\stage-bitmaps\stage-desert.bmp" />
+      <EmbeddedResource Include="resources\stage-bitmaps\stage-fortress.bmp" />
+      <EmbeddedResource Include="resources\stage-bitmaps\stage-ghosthouse.bmp" />
+      <EmbeddedResource Include="resources\stage-bitmaps\stage-grassland.bmp" />
+      <EmbeddedResource Include="resources\stage-bitmaps\stage-ice.bmp" />
+      <EmbeddedResource Include="resources\stage-bitmaps\stage-jungle.bmp" />
+      <EmbeddedResource Include="resources\stage-bitmaps\stage-pipes.bmp" />
+      <EmbeddedResource Include="resources\stage-bitmaps\stage-sky.bmp" />
+      <EmbeddedResource Include="resources\stage-bitmaps\stage-volcano.bmp" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
