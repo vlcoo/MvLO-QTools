@@ -39,7 +39,7 @@
         <WarningLevel>4</WarningLevel>
     </PropertyGroup>
     <PropertyGroup>
-      <PostBuildEvent>ilrepack /out:ReplayShellEx.combi.dll ReplayShellEx.dll ReplayFile.dll</PostBuildEvent>
+      <PostBuildEvent>ilrepack /keyfile:../../mvloShell.snk /out:ReplayShellEx.combi.dll ReplayShellEx.dll ReplayFile.dll</PostBuildEvent>
     </PropertyGroup>
     <ItemGroup>
         <Reference Include="SharpShell, Version=2.7.2.0, Culture=neutral, PublicKeyToken=f14dc899472fe6fb, processorArchitecture=MSIL">
