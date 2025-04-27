@@ -2,7 +2,7 @@
 
 net session >nul 2>&1
 if %errorlevel% neq 0 (
-    echo "*** Elevated privileges needed!! Right click -> Run as Administrator. ***"
+    echo "*** Elevated privileges needed!! (Run as Administrator) ***"
 	pause
     exit /b
 )

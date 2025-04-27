@@ -56,6 +56,7 @@
     </ItemGroup>
     <ItemGroup>
         <Compile Include="ExtensionFilePreview.cs" />
+        <Compile Include="ExtensionIconOverlay.cs" />
         <Compile Include="ExtensionInfoTip.cs" />
         <Compile Include="Properties\AssemblyInfo.cs"/>
         <Compile Include="StageIconGetter.cs" />
@@ -71,9 +72,6 @@
       </ProjectReference>
     </ItemGroup>
     <ItemGroup>
-      <Folder Include="resources\" />
-    </ItemGroup>
-    <ItemGroup>
       <EmbeddedResource Include="resources\stage-bitmaps\stage-beach.bmp" />
       <EmbeddedResource Include="resources\stage-bitmaps\stage-bonus.bmp" />
       <EmbeddedResource Include="resources\stage-bitmaps\stage-brick.bmp" />
@@ -86,6 +84,9 @@
       <EmbeddedResource Include="resources\stage-bitmaps\stage-pipes.bmp" />
       <EmbeddedResource Include="resources\stage-bitmaps\stage-sky.bmp" />
       <EmbeddedResource Include="resources\stage-bitmaps\stage-volcano.bmp" />
+    </ItemGroup>
+    <ItemGroup>
+      <EmbeddedResource Include="resources\cross.ico" />
     </ItemGroup>
     <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets"/>
     <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

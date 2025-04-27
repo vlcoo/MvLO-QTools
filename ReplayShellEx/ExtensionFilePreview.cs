@@ -11,9 +11,8 @@ using Label = System.Windows.Forms.Label;
 namespace ReplayShellEx;
 
 [ComVisible(true)]
-[COMServerAssociation(AssociationType.ClassOfExtension, ".mvlreplay")]
 [DisplayName("MvLO Replay Preview Handler")]
-[Guid("FAEC7428-E6BC-4D43-9CEF-B32EB938A909")]
+[COMServerAssociation(AssociationType.ClassOfExtension, ".mvlreplay")]
 [PreviewHandler(DisableLowILProcessIsolation = false)]
 public class ExtensionFilePreview : SharpPreviewHandler
 {
@@ -28,7 +27,7 @@ public class ExtensionFilePreview : SharpPreviewHandler
         return handler;
     }
     
-    public partial class ExtensionFilePreviewControl: PreviewHandlerControl
+    public class ExtensionFilePreviewControl: PreviewHandlerControl
     {
         public void DoPreview(string filePath)
         {

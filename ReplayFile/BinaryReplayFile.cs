@@ -1,5 +1,4 @@
-﻿using System.Runtime.InteropServices;
-using System.Runtime.Serialization;
+﻿using System.Runtime.Serialization;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 
@@ -169,15 +168,13 @@ public class QuantumBinder : SerializationBinder
     }
 }
 
-public struct ReplayPlayerInfo
+public record struct ReplayPlayerInfo
 {
     public string Username;
-    public byte FinalStarCount;
-    public byte Team;
-    public byte Character;
+    public byte FinalStarCount, Team, Character;
 
-    public static bool operator ==(ReplayPlayerInfo left, ReplayPlayerInfo right) => left.Username.Equals(right.Username);
-    public static bool operator !=(ReplayPlayerInfo left, ReplayPlayerInfo right) => !(left == right);
+    public bool Equals(ReplayPlayerInfo other) => Username == other.Username;
+    public override int GetHashCode() => Username.GetHashCode();
 }
 
 public struct GameVersion
