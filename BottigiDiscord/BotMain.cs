@@ -22,6 +22,7 @@ public static class BotMain
     {
         {0, "\u001b[1;31mM\u001b[0;0m"},
         {1, "\u001b[1;32mL\u001b[0;0m"},
+        {255, "\u001b[1;30m-\u001b[0;0m"},
     };
     
     private static readonly DiscordSocketConfig Intents = new()
@@ -34,10 +35,10 @@ public static class BotMain
     
     public static async Task Main(string[] args)
     {
-        var token = Environment.GetEnvironmentVariable("DiscordTokenBottigi", EnvironmentVariableTarget.User);
+        var token = Environment.GetEnvironmentVariable("DiscordTokenBottigi");
         if (string.IsNullOrEmpty(token))
         {
-            throw new Exception("Bot token missing. Please set the 'DiscordTokenBottigi' user environment variable.");
+            throw new Exception("Bot token missing. Please set the 'DiscordTokenBottigi' system environment variable.");
         }
 
         Bot.Log += Log;
@@ -57,6 +58,7 @@ public static class BotMain
         foreach (var attachment in msg.Attachments)
         {
             if (!attachment.Filename.EndsWith(".mvlreplay")) continue;
+            if (msg.Content == "!health") await SendDevInfo(msg);
             await SendReplayReply(msg, attachment);
             // await SendReplayVideo(msg, attachment);
         }   
@@ -72,6 +74,8 @@ public static class BotMain
             await msg.AddReactionAsync(Emoji.Parse("❔"));
             return;
         }
+        
+        var maxSize = DetermineMaxAllowedAttachmentSize((SocketGuildChannel)channel);
         
         await msg.AddReactionAsync(Emoji.Parse("⌛"));
         var replayDrawer = new VideoReplayDrawer(false);
@@ -95,9 +99,9 @@ public static class BotMain
         var playersString = new StringBuilder();
         foreach (var player in replay.Players)
         {
-            playersString.Append($"{CharacterNames[player.Character]} ");
+            playersString.Append($"{CharacterNames.GetValueOrDefault(player.Character, CharacterNames[255])} ");
             
-            if (replay.Rules.IsTeamsEnabled) playersString.Append($"{TeamNames[player.Team]}");
+            if (replay.Rules.IsTeamsEnabled && player.Team < TeamNames.Count) playersString.Append($"{TeamNames[player.Team]}");
             playersString.Append(player.Username.PadRight(21));
             if (replay.Rules.IsTeamsEnabled) playersString.Append("\u001b[0;0m");
             
@@ -117,6 +121,7 @@ public static class BotMain
         var embed = new EmbedBuilder
         {
             Title = $"MvLO Match Replay{(string.IsNullOrEmpty(replay.CustomName) ? "" : $" • \"{replay.CustomName}\"")}",
+            Description = replay.Format?.ModName == "Vanilla" ? "" : $"This replay is from mod \"*{replay.Format?.ModName}*\".",
             Color = Color.Purple,
             ThumbnailUrl = $"attachment://{iconFileName}",
             Footer = new EmbedFooterBuilder
@@ -128,13 +133,33 @@ public static class BotMain
         embed.AddField("Date", replay.ReplayDate, true);
         embed.AddField("Duration", replay.ReplayDuration, true);
         embed.AddField("Stage", replay.Rules.StageName, true);
-        embed.AddField("Stars", replay.Rules.StarsToWin, true);
-        embed.AddField("Coins/p.up", replay.Rules.CoinsForPowerup, true);
-        embed.AddField("Lives", replay.Rules.Lives, true);
-        embed.AddField("Participants", $"```ansi\n{playersString}\n```");
+        embed.AddField("Stars", QuantumBinder.PropertyToString(replay.Rules.StarsToWin), true);
+        embed.AddField("Coins/p.up", QuantumBinder.PropertyToString(replay.Rules.CoinsForPowerup), true);
+        embed.AddField("Lives", QuantumBinder.PropertyToString(replay.Rules.Lives), true);
+        embed.AddField("Participants", $"```ansi\n{playersString}\n```\n** **");
         
         // await channel.SendMessageAsync(embed: embed.Build());
         await channel.SendFileAsync(iconPath, null, false, embed.Build());
+    }
+
+    private static async Task SendDevInfo(SocketMessage msg)
+    {
+        var s = $"""
+                 Running OK!
+                 -# {Environment.MachineName} | {Environment.OSVersion}
+                 """;
+        await msg.Channel.SendMessageAsync(s);
+    }
+
+    private static int DetermineMaxAllowedAttachmentSize(SocketGuildChannel channel)
+    {
+        var boostCount = channel.Guild.PremiumSubscriptionCount;
+        return boostCount switch
+        {
+            >= 14 => 100, // Level 3, 100 MB
+            >= 7 => 50,   // Level 2, 50 MB
+            _ => 8        // No boosts, 8 MB
+        } * 1024 * 1024;
     }
     
     private static string GlobalNameOrUsername(this IUser user) => user.GlobalName ?? user.Username;

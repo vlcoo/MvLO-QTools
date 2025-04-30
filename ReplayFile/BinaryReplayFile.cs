@@ -7,10 +7,8 @@ namespace ReplayFile;
 public class BinaryReplayFile
 {
     public const int SolutionVersion = 0;
-    private const string MagicHeader = "MvLO-RP";
-    private static int MagicHeaderLength => Encoding.ASCII.GetByteCount(MagicHeader);
-    private static readonly byte[] HeaderBuffer = new byte[MagicHeaderLength];
 
+    public readonly ReplayFormat? Format;
     public readonly long FileSize;
     public readonly bool Valid;
     public readonly GameVersion Version;
@@ -32,15 +30,27 @@ public class BinaryReplayFile
 
     public BinaryReplayFile(Stream input, bool readQData = false)
     {
-        using var reader = new BinaryReader(input, Encoding.ASCII);
-        FileSize = reader.BaseStream.CanSeek ? reader.BaseStream.Length : -1;
+        var memInput = new MemoryStream();
+        if (!input.CanSeek) input.CopyTo(memInput);
+        using var reader = new BinaryReader(memInput.Length > 0 ? memInput : input, Encoding.ASCII);
+        FileSize = reader.BaseStream.Length;
+        input.Dispose();
 
         try
         {
-            var read = reader.Read(HeaderBuffer, 0, MagicHeaderLength);
-            if (read != MagicHeaderLength) return;
-            var readString = Encoding.ASCII.GetString(HeaderBuffer);
-            if (readString != MagicHeader) return;
+            // the header can be any of the ones in the lookup table. check each one?
+            foreach (var validFormat in ReplayModMapper.ValidReplayFormats)
+            {
+                reader.BaseStream.Position = 0;
+                var headerLength = Encoding.ASCII.GetByteCount(validFormat.Header);
+                var headerBuffer = new byte[headerLength];
+                if (reader.Read(headerBuffer, 0, headerLength) != headerLength) continue;
+                if (Encoding.ASCII.GetString(headerBuffer) != validFormat.Header) continue;
+                Format = validFormat;
+                break;
+            }
+
+            if (Format == null) return;
 
             Version = new GameVersion
             {
@@ -59,7 +69,7 @@ public class BinaryReplayFile
             {
                 Binder = new QuantumBinder()
             };
-            Rules = (GameRules)formatter.Deserialize(input);
+            Rules = (GameRules)formatter.Deserialize(reader.BaseStream);
 #pragma warning restore SYSLIB0011
 
             Players = new ReplayPlayerInfo[reader.ReadByte()];
@@ -147,25 +157,33 @@ public struct GameRules
     {
         public long Value;
     }
-    
-    public static string PropertyToString(int value) => value > 0 ? value.ToString() : "Off";
+
+    [Serializable]
+    public struct DummyPrototype
+    {
+        
+    }
 }
 
 public class QuantumBinder : SerializationBinder
 {
     public override Type? BindToType(string assemblyName, string typeName)
     {
-        if (typeName.StartsWith("Quantum.AssetRef"))
-            return typeof(GameRules.QAsset);
-
         return typeName switch
         {
             "Quantum.Prototypes.GameRulesPrototype" => typeof(GameRules),
             "Quantum.AssetGuid" => typeof(GameRules.QGuid),
             "Quantum.QBoolean" => typeof(GameRules.QBool),
-            _ => Type.GetType($"{typeName}, {assemblyName}")
+            _ => 
+                typeName.StartsWith("Quantum.Prototypes") ? 
+                    typeof(GameRules.DummyPrototype) : 
+                typeName.StartsWith("Quantum.AssetRef") ? 
+                    typeof(GameRules.QAsset) : 
+                Type.GetType($"{typeName}, {assemblyName}")
         };
     }
+
+    public static string PropertyToString(int value) => value > 0 ? value.ToString() : "Off";
 }
 
 public record struct ReplayPlayerInfo
