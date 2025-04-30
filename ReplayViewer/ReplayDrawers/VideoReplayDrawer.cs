@@ -12,6 +12,7 @@ public class VideoReplayDrawer : ReplayDrawer
     private const int TileSizePixels = 8;
     
     private readonly bool _exportAsFile;
+    private readonly int _maxSizeBytes;
     
     private readonly SKPaint _marioPaint = new()
     {
@@ -33,10 +34,15 @@ public class VideoReplayDrawer : ReplayDrawer
         Color = SKColors.White,
         Style = SKPaintStyle.Fill,
     };
-    private readonly SKFont _font = new()
+    private readonly SKFont _fontHeader = new()
     {
         Typeface = SKTypeface.FromFamilyName("Arial"),
         Size = 20,
+    };
+    private readonly SKFont _fontSmall = new()
+    {
+        Typeface = SKTypeface.FromFamilyName("Times New Roman"),
+        Size = 8,
     };
 
     private int _width;
@@ -45,9 +51,10 @@ public class VideoReplayDrawer : ReplayDrawer
     public Stream OutputStream { get; private set; }
     public int DrawnFramesCount => _frames.Count;
 
-    public VideoReplayDrawer(bool exportAsFile)
+    public VideoReplayDrawer(bool exportAsFile, int maxSizeBytes = 0)
     {
         _exportAsFile = exportAsFile;
+        _maxSizeBytes = maxSizeBytes;
     }
 
     public override float Speed => 1f;
@@ -58,39 +65,65 @@ public class VideoReplayDrawer : ReplayDrawer
         var tiles = f.StageTiles;
         _width = stage.TileDimensions.x * TileSizePixels;
         _height = stage.TileDimensions.y * TileSizePixels;
-        var stageCenter = (stage.StageWorldMax - stage.StageWorldMin) / 2;
         
         var bmp = new SKBitmap(_width, _height);
         var g = new SKCanvas(bmp);
         g.Clear(SKColors.LightSkyBlue);
             
-        g.DrawText($"{DrawnFramesCount}", 2, 20, _font, _textPaint);
+        g.DrawText($"{DrawnFramesCount}", 2, 20, _fontHeader, _textPaint);
         
         if (tiles == null) return;
         for (var x = 0; x < stage.TileDimensions.x; x++) {
             for (var y = 0; y < stage.TileDimensions.y; y++) {
-                if (tiles[x + y * stage.TileDimensions.x].HasWorldPolygons(f)) g.DrawRect(x * TileSizePixels, -(y * TileSizePixels) + _height, TileSizePixels, TileSizePixels, _tilePaint);
+                var tile = tiles[x + y * stage.TileDimensions.x];
+                if (tile.HasWorldPolygons(f))
+                {
+                    var tileAsset = (StageTile) Replay.ResourceManager.GetAsset(tile.Tile.Id);
+                    foreach (var shape in tileAsset.CollisionData.Shapes)
+                    {
+                        var path = new SKPath();
+                        foreach (var point in shape.Vertices)
+                        {
+                            var translatedPoint = new FPVector2(point.X + x * TileSizePixels, point.Y + y * TileSizePixels);
+                            if (path.Points.Length == 0) path.MoveTo(translatedPoint.X.AsFloat, translatedPoint.Y.AsFloat);
+                            else path.LineTo(translatedPoint.X.AsFloat, translatedPoint.Y.AsFloat);
+                        }
+                        g.DrawPath(path, _tilePaint);
+                    }
+                    // g.DrawRect(x * TileSizePixels, -(y * TileSizePixels) + _height, TileSizePixels, TileSizePixels, _tilePaint);
+                }
             }
         }
-
+        
         var marios = f.Filter<MarioPlayer>();
         marios.UseCulling = false;
         while (marios.NextUnsafe(out var entity, out var mario))
         {
             f.Unsafe.TryGetPointer(entity, out Transform2D* transform);
-            var pos = transform->Position + stageCenter;
-            g.DrawCircle(pos.X.AsFloat * TileSizePixels * 2, -(pos.Y.AsFloat * TileSizePixels) + _height, TileSizePixels / 4.0f, _marioPaint);
+            RuntimePlayer player = f.GetPlayerData(mario->PlayerRef);
+            var pos = WorldToRelativeTileSmooth(stage, transform->Position, TileSizePixels);
+            g.DrawCircle(pos.X.AsFloat, pos.Y.AsFloat, TileSizePixels / 4.0f, _marioPaint);
+            g.DrawText(player.PlayerNickname, pos.X.AsFloat, pos.Y.AsFloat + 10, _fontSmall, _textPaint);
         }
+        
+        // var all = f.Filter<Transform2D>();
+        // all.UseCulling = false;
+        // while (all.NextUnsafe(out _, out var transform)) {
+        //     var posA = QuantumUtils.WorldToRelativeTile(f, transform->Position);
+        //     g.DrawCircle(posA.x * TileSizePixels, -(posA.y * TileSizePixels) + _height, TileSizePixels / 4.0f, _marioPaint);
+        //     var posB = WorldToRelativeTileSmooth(stage, transform->Position);
+        //     g.DrawCircle(posB.X.AsFloat * TileSizePixels, -(posB.Y.AsFloat * TileSizePixels) + _height, TileSizePixels / 4.0f, _marioPaint);
+        // }
         
         var powerups = f.Filter<Powerup>();
         powerups.UseCulling = false;
         while (powerups.NextUnsafe(out var entity, out var powerup))
         {
             f.Unsafe.TryGetPointer(entity, out Transform2D* transform);
-            var pos = transform->Position + stageCenter;
-            g.DrawCircle(pos.X.AsFloat * TileSizePixels * 2, -(pos.Y.AsFloat * TileSizePixels) + _height, TileSizePixels / 4.0f, _powerupPaint);
+            var pos = WorldToRelativeTileSmooth(stage, transform->Position, TileSizePixels);
+            g.DrawCircle(pos.X.AsFloat, pos.Y.AsFloat, TileSizePixels / 4.0f, _powerupPaint);
         }
-
+        
         _frames.Add(new SKBitmapFrame(bmp));
     }
 
@@ -117,6 +150,14 @@ public class VideoReplayDrawer : ReplayDrawer
                 .ProcessSynchronously();
             OutputStream.Position = 0;
         }
+    }
+    
+    public static FPVector2 WorldToRelativeTileSmooth(VersusStageData stage, FPVector2 worldPos, int magnify = 1) {
+        worldPos -= stage.TilemapWorldPosition;
+        worldPos *= 2;
+        worldPos -= new FPVector2(stage.TileOrigin.x, stage.TileOrigin.y);
+        // worldPos *= magnify;
+        return QuantumUtils.WrapWorld(stage, worldPos, out _);
     }
     
     class SKBitmapFrame(SKBitmap bmp) : IVideoFrame, IDisposable

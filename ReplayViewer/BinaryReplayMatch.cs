@@ -12,8 +12,8 @@ public class BinaryReplayMatch(Stream input) : BinaryReplayFile(input, true)
     private byte[] InitialFrameData => ByteUtils.GZipDecompressBytes(CompressedInitialFrameData);
     private byte[] InputData => ByteUtils.GZipDecompressBytes(CompressedInputData);
     
-    private ResourceManagerStatic ResourceManager;
-    private SimulationConfig SimulationConfig;
+    public ResourceManagerStatic ResourceManager { get; private set; }
+    public SimulationConfig SimulationConfig { get; private set; }
 
     private ReplayDrawer Drawer;
 
@@ -67,11 +67,11 @@ public class BinaryReplayMatch(Stream input) : BinaryReplayFile(input, true)
         
         while (runner.Session.FramePredicted == null || runner.Session.FramePredicted.Number < maxFrame)
         {
-            Thread.Sleep(1);
-            runner.Service(1f);
+            Thread.Sleep((int) Math.Max(1, Drawer.Speed));
+            runner.Service(Drawer.Speed > 0 ? 1.0f / Drawer.Speed : null);
         }
         
-        Console.WriteLine("finished!");
+        Console.WriteLine("Simulation ended!!");
 
         runner.Shutdown();
         ResourceManager.Dispose();
