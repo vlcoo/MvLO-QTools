@@ -31,10 +31,13 @@ public class BinaryReplayFile
     public BinaryReplayFile(Stream input, bool readQData = false)
     {
         var memInput = new MemoryStream();
-        if (!input.CanSeek) input.CopyTo(memInput);
+        if (!input.CanSeek)
+        {
+            input.CopyTo(memInput);
+            input.Dispose();
+        }
         using var reader = new BinaryReader(memInput.Length > 0 ? memInput : input, Encoding.ASCII);
         FileSize = reader.BaseStream.Length;
-        input.Dispose();
 
         try
         {
