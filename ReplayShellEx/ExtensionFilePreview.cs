@@ -223,7 +223,7 @@ public class ExtensionFilePreview : SharpPreviewHandler
             labelCoins.Name = "labelCoins";
             labelCoins.Size = new Size(17, 20);
             labelCoins.TabIndex = 3;
-            labelCoins.Text = QuantumBinder.PropertyToString(replay.Rules.CoinsForPowerup);
+            labelCoins.Text = GameRules.PropertyToString(replay.Rules.CoinsForPowerup);
             labelCoins.ForeColor = SystemColors.ControlText;
             // 
             // labelTitleStars
@@ -244,7 +244,7 @@ public class ExtensionFilePreview : SharpPreviewHandler
             labelStars.Name = "labelStars";
             labelStars.Size = new Size(21, 20);
             labelStars.TabIndex = 5;
-            labelStars.Text = QuantumBinder.PropertyToString(replay.Rules.StarsToWin);
+            labelStars.Text = GameRules.PropertyToString(replay.Rules.StarsToWin);
             labelStars.ForeColor = SystemColors.ControlText;
             // 
             // labelTitleLives
@@ -265,7 +265,7 @@ public class ExtensionFilePreview : SharpPreviewHandler
             labelLives.Name = "labelLives";
             labelLives.Size = new Size(17, 20);
             labelLives.TabIndex = 9;
-            labelLives.Text = QuantumBinder.PropertyToString(replay.Rules.Lives);
+            labelLives.Text = GameRules.PropertyToString(replay.Rules.Lives);
             labelLives.ForeColor = SystemColors.ControlText;
             // 
             // labelTitleDuration
@@ -374,7 +374,7 @@ public class ExtensionFilePreview : SharpPreviewHandler
                 {
                     0 => "M",
                     1 => "L",
-                    _ => "?"
+                    _ => "-"
                 };
                 labelCharacter.TextAlign = ContentAlignment.MiddleCenter;
                 // 

@@ -133,9 +133,9 @@ public static class BotMain
         embed.AddField("Date", replay.ReplayDate, true);
         embed.AddField("Duration", replay.ReplayDuration, true);
         embed.AddField("Stage", replay.Rules.StageName, true);
-        embed.AddField("Stars", QuantumBinder.PropertyToString(replay.Rules.StarsToWin), true);
-        embed.AddField("Coins/p.up", QuantumBinder.PropertyToString(replay.Rules.CoinsForPowerup), true);
-        embed.AddField("Lives", QuantumBinder.PropertyToString(replay.Rules.Lives), true);
+        embed.AddField("Stars", GameRules.PropertyToString(replay.Rules.StarsToWin), true);
+        embed.AddField("Coins/p.up", GameRules.PropertyToString(replay.Rules.CoinsForPowerup), true);
+        embed.AddField("Lives", GameRules.PropertyToString(replay.Rules.Lives), true);
         embed.AddField("Participants", $"```ansi\n{playersString}\n```\n** **");
         
         // await channel.SendMessageAsync(embed: embed.Build());

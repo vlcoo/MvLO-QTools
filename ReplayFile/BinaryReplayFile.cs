@@ -1,6 +1,5 @@
-﻿using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
+﻿using System.Text;
+using System.Text.RegularExpressions;
 
 namespace ReplayFile;
 
@@ -67,13 +66,7 @@ public class BinaryReplayFile
             ReplayLengthInFrames = reader.ReadInt32();
             CustomName = reader.ReadString();
 
-#pragma warning disable SYSLIB0011
-            var formatter = new BinaryFormatter
-            {
-                Binder = new QuantumBinder()
-            };
-            Rules = (GameRules)formatter.Deserialize(reader.BaseStream);
-#pragma warning restore SYSLIB0011
+            Rules = new GameRules(reader.ReadString());
 
             Players = new ReplayPlayerInfo[reader.ReadByte()];
             for (var i = 0; i < Players.Length; i++)
@@ -87,7 +80,7 @@ public class BinaryReplayFile
                 };
                 reader.ReadInt32(); // Quantum Ref
             }
-                
+            
             WinningTeam = reader.ReadSByte();
 
             if (readQData)
@@ -130,62 +123,39 @@ public struct GameRules
         {372234066173501830, "Beach"},
     };
     
-    private QAsset Stage;
-    public string StageName => StageNames.TryGetValue(Stage.Id.Value, out var name) ? name : "unknown";
+    public string StageName;
     public int StarsToWin;
     public int CoinsForPowerup;
     public int Lives;
     public int TimerSeconds;
-    private QBool TeamsEnabled;
-    public bool IsTeamsEnabled => TeamsEnabled.Value > 0;
-    private QBool CustomPowerupsEnabled;
-    public bool IsCustomPowerupsEnabled => CustomPowerupsEnabled.Value > 0;
-    private QBool DrawOnTimeUp;
-    public bool IsDrawOnTimeUp => DrawOnTimeUp.Value > 0;
+    public bool IsTeamsEnabled;
+    public bool IsCustomPowerupsEnabled;
+    public bool IsDrawOnTimeUp;
 
-    [Serializable]
-    public struct QBool
+    public GameRules(string json)
     {
-        public int Value;
+        var stageMatch = new Regex(@"""Stage"":{""Id"":{""Value"":(\d{18})}}", RegexOptions.IgnoreCase).Match(json);
+        var starsMatch = new Regex(@"""StarsToWin"":(\d+)", RegexOptions.IgnoreCase).Match(json);
+        var coinsMatch = new Regex(@"""CoinsForPowerup"":(\d+)", RegexOptions.IgnoreCase).Match(json);
+        var livesMatch = new Regex(@"""Lives"":(\d+)", RegexOptions.IgnoreCase).Match(json);
+        var timerMatch = new Regex(@"""TimerSeconds"":(\d+)", RegexOptions.IgnoreCase).Match(json);
+        var teamsMatch = new Regex(@"""TeamsEnabled"":{""Value"":(\d)}", RegexOptions.IgnoreCase).Match(json);
+        var customPowerupsMatch = new Regex(@"""CustomPowerupsEnabled"":{""Value"":(\d)}", RegexOptions.IgnoreCase).Match(json);
+        var drawOnTimeUpMatch = new Regex(@"""DrawOnTimeUp"":{""Value"":(\d)}", RegexOptions.IgnoreCase).Match(json);
+        if (!stageMatch.Success || !starsMatch.Success || !coinsMatch.Success || !livesMatch.Success ||
+            !timerMatch.Success || !teamsMatch.Success || !customPowerupsMatch.Success ||
+            !drawOnTimeUpMatch.Success) throw new ArgumentException("Unexpected JSON schema!!");
+
+        StageName = StageNames.TryGetValue(long.Parse(stageMatch.Groups[1].Value), out var name) ? name : "Unknown";
+        StarsToWin = int.Parse(starsMatch.Groups[1].Value);
+        CoinsForPowerup = int.Parse(coinsMatch.Groups[1].Value);
+        Lives = int.Parse(livesMatch.Groups[1].Value);
+        TimerSeconds = int.Parse(timerMatch.Groups[1].Value);
+        IsTeamsEnabled = int.Parse(teamsMatch.Groups[1].Value) > 0;
+        IsCustomPowerupsEnabled = int.Parse(customPowerupsMatch.Groups[1].Value) > 0;
+        IsDrawOnTimeUp = int.Parse(drawOnTimeUpMatch.Groups[1].Value) > 0;
     }
     
-    [Serializable]
-    public struct QAsset
-    {
-        public QGuid Id;
-    }
-    
-    [Serializable]
-    public struct QGuid
-    {
-        public long Value;
-    }
-
-    [Serializable]
-    public struct DummyPrototype
-    {
-        
-    }
-}
-
-public class QuantumBinder : SerializationBinder
-{
-    public override Type? BindToType(string assemblyName, string typeName)
-    {
-        return typeName switch
-        {
-            "Quantum.Prototypes.GameRulesPrototype" => typeof(GameRules),
-            "Quantum.AssetGuid" => typeof(GameRules.QGuid),
-            "Quantum.QBoolean" => typeof(GameRules.QBool),
-            _ => 
-                typeName.StartsWith("Quantum.Prototypes") ? 
-                    typeof(GameRules.DummyPrototype) : 
-                typeName.StartsWith("Quantum.AssetRef") ? 
-                    typeof(GameRules.QAsset) : 
-                Type.GetType($"{typeName}, {assemblyName}")
-        };
-    }
-
     public static string PropertyToString(int value) => value > 0 ? value.ToString() : "Off";
 }
 

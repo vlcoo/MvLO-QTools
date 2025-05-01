@@ -32,6 +32,7 @@ exit /b
 :askexplorerrestart
 	set /P c=File Explorer must be restarted for changes to apply. Do so now? [Y] for Yes.
 	if /I "%c%" EQU "y" (
+		taskkill /im prevhost.exe /f
 		taskkill /im explorer.exe /f
 		start explorer.exe
 	)
