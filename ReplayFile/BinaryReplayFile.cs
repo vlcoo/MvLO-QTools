@@ -74,7 +74,7 @@ public class BinaryReplayFile
                 Players[i] = new ReplayPlayerInfo
                 {
                     Username = reader.ReadString(),
-                    FinalStarCount = reader.ReadByte(),
+                    FinalObjectiveCount = reader.ReadInt32(),
                     Team = reader.ReadByte(),
                     Character = reader.ReadByte(),
                 };
@@ -97,9 +97,10 @@ public class BinaryReplayFile
 
             Valid = true;
         }
-        catch (Exception)
+        catch (Exception e)
         {
             // unexpected data. valid is false
+            Console.WriteLine(e.Message);
         }
     }
 }
@@ -109,60 +110,70 @@ public struct GameRules
 {
     private static readonly Dictionary<long, string> StageNames = new()
     {
-        {438935048561577377, "Grassland"},
-        {422133218138107384, "Bricks"},
-        {472204063534919154, "Fortress"},
-        {329327285755650127, "Pipes"},
-        {372220640476305493, "Ice"},
-        {365460248894597713, "Jungle"},
-        {328495164863943948, "Sky"},
-        {420358832928607506, "Bonus"},
-        {269186410886596865, "Volcano"},
-        {280769179842433036, "Desert"},
-        {503647763446439242, "Ghost House"},
-        {372234066173501830, "Beach"},
+        { 438935048561577377, "Grassland" },
+        { 422133218138107384, "Bricks" },
+        { 472204063534919154, "Fortress" },
+        { 329327285755650127, "Pipes" },
+        { 372220640476305493, "Ice" },
+        { 365460248894597713, "Jungle" },
+        { 328495164863943948, "Sky" },
+        { 420358832928607506, "Bonus" },
+        { 269186410886596865, "Volcano" },
+        { 280769179842433036, "Desert" },
+        { 503647763446439242, "Ghost House" },
+        { 372234066173501830, "Beach" },
+    };
+
+    private static readonly Dictionary<long, string> GamemodeNames = new()
+    {
+        { 394255533064620237, "Coin Runners" },
+        { 326486899682662279, "Star Chasers" },
     };
     
     public string StageName;
+    public string GamemodeName;
     public int StarsToWin;
     public int CoinsForPowerup;
     public int Lives;
-    public int TimerSeconds;
+    public int TimerMinutes;
     public bool IsTeamsEnabled;
     public bool IsCustomPowerupsEnabled;
     public bool IsDrawOnTimeUp;
 
     public GameRules(string json)
     {
-        var stageMatch = new Regex(@"""Stage"":{""Id"":{""Value"":(\d{18})}}", RegexOptions.IgnoreCase).Match(json);
+        var stageMatch = new Regex(@"""Stage"":{""Id"":{""Value"":(\d{18})", RegexOptions.IgnoreCase).Match(json);
+        var gamemodeMatch = new Regex(@"""Gamemode"":{""Id"":{""Value"":(\d{18})", RegexOptions.IgnoreCase).Match(json);
         var starsMatch = new Regex(@"""StarsToWin"":(\d+)", RegexOptions.IgnoreCase).Match(json);
         var coinsMatch = new Regex(@"""CoinsForPowerup"":(\d+)", RegexOptions.IgnoreCase).Match(json);
         var livesMatch = new Regex(@"""Lives"":(\d+)", RegexOptions.IgnoreCase).Match(json);
-        var timerMatch = new Regex(@"""TimerSeconds"":(\d+)", RegexOptions.IgnoreCase).Match(json);
+        var timerMatch = new Regex(@"""TimerMinutes"":(\d+)", RegexOptions.IgnoreCase).Match(json);
         var teamsMatch = new Regex(@"""TeamsEnabled"":{""Value"":(\d)}", RegexOptions.IgnoreCase).Match(json);
         var customPowerupsMatch = new Regex(@"""CustomPowerupsEnabled"":{""Value"":(\d)}", RegexOptions.IgnoreCase).Match(json);
         var drawOnTimeUpMatch = new Regex(@"""DrawOnTimeUp"":{""Value"":(\d)}", RegexOptions.IgnoreCase).Match(json);
         if (!stageMatch.Success || !starsMatch.Success || !coinsMatch.Success || !livesMatch.Success ||
             !timerMatch.Success || !teamsMatch.Success || !customPowerupsMatch.Success ||
-            !drawOnTimeUpMatch.Success) throw new ArgumentException("Unexpected JSON schema!!");
+            !drawOnTimeUpMatch.Success || !gamemodeMatch.Success) throw new ArgumentException("Unexpected JSON schema!!");
 
         StageName = StageNames.TryGetValue(long.Parse(stageMatch.Groups[1].Value), out var name) ? name : "Unknown";
+        GamemodeName = GamemodeNames.TryGetValue(long.Parse(gamemodeMatch.Groups[1].Value), out var mode) ? mode : "Unknown";
         StarsToWin = int.Parse(starsMatch.Groups[1].Value);
         CoinsForPowerup = int.Parse(coinsMatch.Groups[1].Value);
         Lives = int.Parse(livesMatch.Groups[1].Value);
-        TimerSeconds = int.Parse(timerMatch.Groups[1].Value);
+        TimerMinutes = int.Parse(timerMatch.Groups[1].Value);
         IsTeamsEnabled = int.Parse(teamsMatch.Groups[1].Value) > 0;
         IsCustomPowerupsEnabled = int.Parse(customPowerupsMatch.Groups[1].Value) > 0;
         IsDrawOnTimeUp = int.Parse(drawOnTimeUpMatch.Groups[1].Value) > 0;
     }
     
-    public static string PropertyToString(int value) => value > 0 ? value.ToString() : "Off";
+    public static string PropertyToString(int value, string suffix = "") => value > 0 ? value + suffix : "Off";
 }
 
 public record struct ReplayPlayerInfo
 {
     public string Username;
-    public byte FinalStarCount, Team, Character;
+    public int FinalObjectiveCount;
+    public byte Team, Character;
 
     public bool Equals(ReplayPlayerInfo other) => Username == other.Username;
     public override int GetHashCode() => Username.GetHashCode();

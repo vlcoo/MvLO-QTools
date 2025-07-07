@@ -398,7 +398,7 @@ public class ExtensionFilePreview : SharpPreviewHandler
                 labelStarCount.Name = "labelStarCount";
                 labelStarCount.MinimumSize = new Size(30, 32);
                 labelStarCount.TabIndex = 1;
-                labelStarCount.Text = $"{player.FinalStarCount} ☆";
+                labelStarCount.Text = $"{player.FinalObjectiveCount} ☆";
                 labelStarCount.TextAlign = ContentAlignment.MiddleCenter;
                 labelStarCount.ForeColor = SystemColors.ControlText;
                 // 
