@@ -24,7 +24,7 @@ if "%1"=="-dereg" (
     goto askexplorerrestart
 )
 
-echo "*** Please specify argument: '-reg' to install shell extension server, '-dereg' to uninstall. ***"
+echo "*** Please specify first argument: '-reg' to install shell extension server, '-dereg' to uninstall. ***"
 pause
 exit /b
 

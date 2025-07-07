@@ -1,9 +1,0 @@
-Windows Registry Editor Version 5.00
-
-[-HKEY_CLASSES_ROOT\.mvlreplay]
-
-[-HKEY_CLASSES_ROOT\MvLO-Shell.Replay]
-
-[-HKEY_CLASSES_ROOT\MvLO-Shell.Replay\DefaultIcon]
-
-[-HKEY_CLASSES_ROOT\MvLO-Shell.Replay\shell\open\command]

@@ -1,14 +1,5 @@
 @echo off
 
-:: registering file types (3 goals):
-:: * - file type description
-:: ** - file icon in explorer
-:: *** - open with a specific executable
-:: 1. add to HKEY_CLASSES_ROOT a key with the extension, with value a meaningful name A (ProgID)
-:: 2. add to HKEY_CLASSES_ROOT a key with the name A, with the file type description as value *
-:: 3. add to HKEY_CLASSES_ROOT a key with the name A\DefaultIcon, with icon path as value **
-:: 4. add to HKEY_CLASSES_ROOT a key with the name A\shell\open\command, with the executable path as value (followed by something like \"%1\") ***
-
 net session >nul 2>&1
 if %errorlevel% neq 0 (
     echo "*** Elevated privileges needed!! (Run as Administrator) ***"
@@ -19,8 +10,14 @@ if %errorlevel% neq 0 (
 setlocal
 
 set "ReplayProgId=MvLO-QTools.Replay"
-set "DefaultIconPath=C:\ShellExtensions\mvlo1.ico,0"
-set "ExecutablePath=C:\Users\Victor\Projects\Unity\VicMvsLO\Build\vanilla-patched\NSMB-MarioVsLuigi.exe"
+set "DefaultIconPath=%~dp0mvlo1.ico,0"
+set "ExecutablePath=%2"
+
+if "%ExecutablePath%"=="" (
+	echo "*** Please specify second argument: path to NSMBVS executable. ***"
+	pause
+	exit /b
+)
 
 if "%1"=="-reg" (
     reg add "HKEY_CLASSES_ROOT\.mvlreplay" /ve /d "%ReplayProgId%" /f
@@ -32,14 +29,13 @@ if "%1"=="-reg" (
 )
 
 if "%1"=="-dereg" (
-    echo Unregistering file type...
     reg delete "HKEY_CLASSES_ROOT\.mvlreplay" /f
     reg delete "HKEY_CLASSES_ROOT\%ReplayProgId%" /f
     echo "*** Unregistration process finished!! See status above. ***"
     goto askexplorerrestart
 )
 
-echo "*** Please specify argument: '-reg' to add file type associations, '-dereg' to remove. ***"
+echo "*** Please specify first argument: '-reg' to add file type associations, '-dereg' to remove. ***"
 pause
 exit /b
 
