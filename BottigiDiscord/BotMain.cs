@@ -33,7 +33,7 @@ public static class BotMain
 
     private static readonly HttpClient Downloader = new();
     
-    public static async Task Main(string[] args)
+    public static async Task Main()
     {
         var token = Environment.GetEnvironmentVariable("DiscordTokenBottigi");
         if (string.IsNullOrEmpty(token))
@@ -58,7 +58,7 @@ public static class BotMain
         foreach (var attachment in msg.Attachments)
         {
             if (!attachment.Filename.EndsWith(".mvlreplay")) continue;
-            if (msg.Content == "!health") await SendDevInfo(msg);
+            // if (msg.Content == "!health") await SendDevInfo(msg);
             await SendReplayReply(msg, attachment);
             // await SendReplayVideo(msg, attachment);
         }   
@@ -104,9 +104,11 @@ public static class BotMain
             if (replay.Rules.IsTeamsEnabled && player.Team < TeamNames.Count) playersString.Append($"{TeamNames[player.Team]}");
             playersString.Append(player.Username.PadRight(21));
             if (replay.Rules.IsTeamsEnabled) playersString.Append("\u001b[0;0m");
-            
-            playersString.Append($"{player.FinalObjectiveCount}☆".PadRight(3));
-            
+
+            playersString.Append(player.FinalObjectiveCount >= 0
+                ? $"{player.FinalObjectiveCount}☆".PadRight(3)
+                : "OUT");
+
             var hasWon = false;
             if (replay.Rules.IsTeamsEnabled) hasWon = player.Team == replay.WinningTeam;
             else if (replay.WinningPlayer != null) hasWon = player == replay.WinningPlayer;

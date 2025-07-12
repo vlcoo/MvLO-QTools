@@ -20,7 +20,7 @@ public class BinaryReplayFile
     public readonly GameRules Rules;
     public readonly ReplayPlayerInfo[] Players = [];
     public readonly sbyte WinningTeam = -1;
-    public ReplayPlayerInfo? WinningPlayer => Rules.IsTeamsEnabled ? null : Players[WinningTeam];
+    public ReplayPlayerInfo? WinningPlayer => Rules.IsTeamsEnabled || WinningTeam < 0 || WinningTeam >= Players.Length ? null : Players[WinningTeam];
     
     protected readonly byte[]? CompressedRuntimeConfigData;
     protected readonly byte[]? CompressedDeterministicConfigData;
