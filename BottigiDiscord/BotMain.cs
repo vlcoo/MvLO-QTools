@@ -1,4 +1,5 @@
-﻿using System.Text;
+﻿using System.Diagnostics;
+using System.Text;
 using Discord;
 using Discord.WebSocket;
 using ReplayFile;
@@ -9,13 +10,22 @@ namespace BottigiDiscord;
 
 public static class BotMain
 {
-    private static readonly Dictionary<byte, string> TeamNames = new()
+    private static readonly Dictionary<byte, string> TeamColourCodes = new()
     {
         {0, "\u001b[0;31m"},
         {1, "\u001b[0;32m"},
         {2, "\u001b[0;34m"},
         {3, "\u001b[0;33m"},
         {4, "\u001b[0;35m"},
+    };
+    
+    private static readonly Dictionary<sbyte, string> TeamNames = new()
+    {
+        {0, "Red"},
+        {1, "Green"},
+        {2, "Blue"},
+        {3, "Yellow"},
+        {4, "Purple"},
     };
 
     private static readonly Dictionary<byte, string> CharacterNames = new()
@@ -32,6 +42,8 @@ public static class BotMain
     private static readonly DiscordSocketClient Bot = new(Intents);
 
     private static readonly HttpClient Downloader = new();
+
+    private static bool _isRenderingVideo = false;
     
     public static async Task Main()
     {
@@ -66,9 +78,19 @@ public static class BotMain
 
     private static async Task SendReplayVideo(SocketMessage msg, Attachment replayAttachment)
     {
+        if (_isRenderingVideo)
+        {
+            await msg.AddReactionAsync(Emoji.Parse("🤫"));
+            return;
+        }
+        
         var channel = msg.Channel;
         await using var stream = await Downloader.GetStreamAsync(replayAttachment.Url);
-        var replay = new BinaryReplayMatch(stream);
+        using var memStream = new MemoryStream();
+        await stream.CopyToAsync(memStream);
+        memStream.Position = 0;
+        
+        var replay = new BinaryReplayMatch(new MemoryStream(memStream.ToArray()));
         if (!replay.Valid)
         {
             await msg.AddReactionAsync(Emoji.Parse("❔"));
@@ -76,13 +98,41 @@ public static class BotMain
         }
         
         var maxSize = DetermineMaxAllowedAttachmentSize((SocketGuildChannel)channel);
-        
+        var guid = Guid.NewGuid().ToString();
+        _isRenderingVideo = true;
+        var path = Path.Combine(Path.GetTempPath(), $"{guid}.");
+
+        await using (var fileStream = File.Create(path + "mvlreplay"))
+        {
+            memStream.Position = 0;
+            await memStream.CopyToAsync(fileStream);
+        }
+
         await msg.AddReactionAsync(Emoji.Parse("⌛"));
-        var replayDrawer = new VideoReplayDrawer(false);
-        var task = Task.Run(() => replay.Start(replayDrawer));
-        await task;
-        await channel.SendFileAsync(replayDrawer.OutputStream, "replay.mp4");
+        var startInfo = new ProcessStartInfo
+        {
+            FileName = "C:\\Users\\Victor\\Projects\\Unity\\VicMvsLO\\Build\\replayviewer\\NSMB-MarioVsLuigi.exe",
+            Arguments = $"-batchmode -replay \"{path + "mvlreplay"}\" -size {maxSize} -name {guid}",
+            UseShellExecute = false,
+            RedirectStandardOutput = true,
+            RedirectStandardError = true,
+            CreateNoWindow = true,
+        };
+        var proc = new Process { StartInfo = startInfo };
+        proc.Start();
+        await proc.WaitForExitAsync();
+        if (File.Exists(path + "mp4"))
+        {
+            var winnerText = replay.WinningTeam < 0
+                ? "No Contest..."
+                : (replay.Rules.IsTeamsEnabled ? TeamNames[replay.WinningTeam] : replay.WinningPlayer?.Username) +
+                   " Wins!";
+            await channel.SendFileAsync(path + "mp4", $"The match concluded with the result `{winnerText}`");
+            File.Delete(path + "mp4");
+        }
+        
         await msg.RemoveReactionAsync(Emoji.Parse("⌛"), Bot.CurrentUser);
+        _isRenderingVideo = false;
     }
 
     private static async Task SendReplayReply(SocketMessage msg, Attachment replayAttachment)
@@ -97,11 +147,11 @@ public static class BotMain
         }
 
         var playersString = new StringBuilder();
-        foreach (var player in replay.Players)
+        foreach (var player in replay.Players.OrderByDescending(info => info.FinalObjectiveCount))
         {
             playersString.Append($"{CharacterNames.GetValueOrDefault(player.Character, CharacterNames[255])} ");
             
-            if (replay.Rules.IsTeamsEnabled && player.Team < TeamNames.Count) playersString.Append($"{TeamNames[player.Team]}");
+            if (replay.Rules.IsTeamsEnabled && player.Team < TeamColourCodes.Count) playersString.Append($"{TeamColourCodes[player.Team]}");
             playersString.Append(player.Username.PadRight(21));
             if (replay.Rules.IsTeamsEnabled) playersString.Append("\u001b[0;0m");
 
@@ -126,7 +176,7 @@ public static class BotMain
 
         var embed = new EmbedBuilder
         {
-            Title = $"MvLO Match Replay{(string.IsNullOrEmpty(replay.CustomName) ? "" : $" • \"{replay.CustomName}\"")}",
+            Title = $"MvLO Match Replay{(string.IsNullOrEmpty(replay.CustomName) ? "" : $" • \"{replay.CustomName.Replace("\n", "")}\"")}",
             Description = description.ToString(),
             Color = Color.Purple,
             ThumbnailUrl = $"attachment://{iconFileName}",
@@ -168,7 +218,7 @@ public static class BotMain
             >= 14 => 100, // Level 3, 100 MB
             >= 7 => 50,   // Level 2, 50 MB
             _ => 8        // No boosts, 8 MB
-        } * 1024 * 1024;
+        };
     }
     
     private static string GlobalNameOrUsername(this IUser user) => user.GlobalName ?? user.Username;
