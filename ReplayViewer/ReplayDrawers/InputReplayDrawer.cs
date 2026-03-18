@@ -5,6 +5,12 @@ namespace ReplayViewer.ReplayDrawers;
 public class InputReplayDrawer : ReplayDrawer
 {
     public override float Speed => 0f;
+
+    public override void OnBeforeFirstFrame()
+    {
+        Replay.EventDispatcher.Subscribe<EventMarioPlayerCollectedCoin>(this, OnCoinCollected);
+    }
+    
     public override unsafe void DrawFrame(Frame f)
     {
         var marios = f.Filter<MarioPlayer>();
@@ -36,5 +42,10 @@ public class InputReplayDrawer : ReplayDrawer
     public override void Render()
     {
         
+    }
+    
+    public void OnCoinCollected(EventMarioPlayerCollectedCoin e)
+    {
+        Console.WriteLine($"i now have {e.Coins} coines!!");
     }
 }

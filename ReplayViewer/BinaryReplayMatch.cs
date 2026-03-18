@@ -14,6 +14,8 @@ public class BinaryReplayMatch(Stream input) : BinaryReplayFile(input, true)
     
     public ResourceManagerStatic ResourceManager { get; private set; }
     public SimulationConfig SimulationConfig { get; private set; }
+    public CallbackDispatcher CallbackDispatcher { get; private set; }
+    public EventDispatcher EventDispatcher { get; private set; }
 
     private ReplayDrawer Drawer;
     private SessionRunner Runner;
@@ -24,6 +26,7 @@ public class BinaryReplayMatch(Stream input) : BinaryReplayFile(input, true)
         if (!Valid) return;
         Drawer = drawer;
         Init();
+        Drawer.OnBeforeFirstFrame();
         
         while (Runner.Session.FramePredicted == null || Runner.Session.FramePredicted.Number < _maxFrame)
         {
@@ -35,6 +38,7 @@ public class BinaryReplayMatch(Stream input) : BinaryReplayFile(input, true)
 
         Runner.Shutdown();
         ResourceManager.Dispose();
+        
         drawer.Render();
     }
 
@@ -60,7 +64,7 @@ public class BinaryReplayMatch(Stream input) : BinaryReplayFile(input, true)
             Drawer.Render();
         }
     }
-
+    
     private void Init()
     {
         _maxFrame = InitialFrameNumber + ReplayLengthInFrames;
@@ -77,19 +81,19 @@ public class BinaryReplayMatch(Stream input) : BinaryReplayFile(input, true)
                 serializer.AssetsFromByteArray(
                     File.ReadAllBytes(AppDomain.CurrentDomain.BaseDirectory + "resources/db.json")),
                 DotNetRunnerFactory.CreateNativeAllocator());
-        var callbackDispatcher = new CallbackDispatcher();
-        var eventDispatcher = new EventDispatcher();
-        Drawer.EventDispatcher = eventDispatcher;
+        CallbackDispatcher = new CallbackDispatcher();
+        EventDispatcher = new EventDispatcher();
+        Drawer.EventDispatcher = EventDispatcher;
         Drawer.Replay = this;
-        callbackDispatcher.Subscribe<CallbackSimulateFinished>(this,
+        CallbackDispatcher.Subscribe<CallbackSimulateFinished>(this,
             e => Drawer.DrawFrame(e.Game.Frames.Predicted));
         
         var arguments = new SessionRunner.Arguments
         {
             RunnerFactory = new DotNetRunnerFactory(),
             AssetSerializer = serializer,
-            CallbackDispatcher = callbackDispatcher,
-            EventDispatcher = eventDispatcher,
+            CallbackDispatcher = CallbackDispatcher,
+            EventDispatcher = EventDispatcher,
             ResourceManager = ResourceManager,
             GameFlags = QuantumGameFlags.EnableTaskProfiler,
             ReplayProvider = replayInputProvider,
