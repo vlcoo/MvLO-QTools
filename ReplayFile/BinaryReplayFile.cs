@@ -71,14 +71,7 @@ public class BinaryReplayFile
             Players = new ReplayPlayerInfo[reader.ReadByte()];
             for (var i = 0; i < Players.Length; i++)
             {
-                Players[i] = new ReplayPlayerInfo
-                {
-                    Username = reader.ReadString(),
-                    FinalObjectiveCount = reader.ReadInt32(),
-                    Team = reader.ReadByte(),
-                    Character = reader.ReadByte(),
-                };
-                reader.ReadInt32(); // Quantum Ref
+                Players[i] = ReplayPlayerInfo.Parse(reader, Version);
             }
             
             WinningTeam = reader.ReadSByte();
@@ -171,15 +164,46 @@ public struct GameRules
 
 public record struct ReplayPlayerInfo
 {
+    private static readonly long[] Characters = 
+    [
+        532063855470386108, // Mario
+        485289843648077326, // Luigi
+    ];
+
     public string Username;
     public int FinalObjectiveCount;
-    public byte Team, Character;
+    public byte Team;
+    public long Character;
 
     public bool Equals(ReplayPlayerInfo other) => Username == other.Username;
     public override int GetHashCode() => Username.GetHashCode();
-}
 
-public struct GameVersion
-{
-    public byte Major, Minor, Patch, Hotfix;
+    public static ReplayPlayerInfo Parse(BinaryReader reader, GameVersion version)
+    {
+        ReplayPlayerInfo result;
+        if (version >= new GameVersion(2, 1))
+        {
+            // Addon capable format- `Character` is an AssetGuid (long)
+            result = new ReplayPlayerInfo {
+                Username = reader.ReadString(),
+                FinalObjectiveCount = reader.ReadInt32(),
+                Team = reader.ReadByte(),
+                Character = reader.ReadInt64(),
+            };
+            reader.ReadInt32(); // Discard PlayerRef
+        }
+        else
+        {
+            // Old format- `Character` is single byte representing index
+            result = new ReplayPlayerInfo {
+                Username = reader.ReadString(),
+                FinalObjectiveCount = reader.ReadInt32(),
+                Team = reader.ReadByte(),
+                Character = Characters[reader.ReadByte()],
+            };
+            reader.ReadInt32(); // Discard PlayerRef
+        }
+
+        return result;
+    }
 }

@@ -9,6 +9,7 @@ public static class ReplayModMapper
             Header = "MvLO-RP",
             Extension = ".mvlreplay",
             ModName = "Vanilla",
+            IsVanilla = true,
         },
         new()
         {
@@ -22,6 +23,7 @@ public static class ReplayModMapper
 public record struct ReplayFormat
 {
     public string Header, Extension, ModName;
+    public bool IsVanilla;
 
     public bool Equals(ReplayFormat? other) => Header == other?.Header;
     public override int GetHashCode() => Header.GetHashCode();

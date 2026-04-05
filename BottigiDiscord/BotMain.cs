@@ -4,7 +4,6 @@ using Discord;
 using Discord.WebSocket;
 using ReplayFile;
 using ReplayViewer;
-using ReplayViewer.ReplayDrawers;
 
 namespace BottigiDiscord;
 
@@ -28,13 +27,13 @@ public static class BotMain
         {4, "Purple"},
     };
 
-    private static readonly Dictionary<byte, string> CharacterNames = new()
+    private static readonly Dictionary<long, string> CharacterNames = new()
     {
-        {0, "\u001b[1;31mM\u001b[0;0m"},
-        {1, "\u001b[1;32mL\u001b[0;0m"},
-        {255, "\u001b[1;30m-\u001b[0;0m"},
+        {532063855470386108, "\u001b[1;31mM\u001b[0;0m"}, // Mario
+        {485289843648077326, "\u001b[1;32mL\u001b[0;0m"}, // Luigi
     };
-    
+    private static readonly string FallbackCharacterName = "\u001b[1;30m-\u001b[0;0m";
+
     private static readonly DiscordSocketConfig Intents = new()
     {
         GatewayIntents = GatewayIntents.AllUnprivileged | GatewayIntents.MessageContent
@@ -149,7 +148,7 @@ public static class BotMain
         var playersString = new StringBuilder();
         foreach (var player in replay.Players.OrderByDescending(info => info.FinalObjectiveCount))
         {
-            playersString.Append($"{CharacterNames.GetValueOrDefault(player.Character, CharacterNames[255])} ");
+            playersString.Append($"{CharacterNames.GetValueOrDefault(player.Character, FallbackCharacterName)} ");
             
             if (replay.Rules.IsTeamsEnabled && player.Team < TeamColourCodes.Count) playersString.Append($"{TeamColourCodes[player.Team]}");
             playersString.Append(player.Username.PadRight(21));
@@ -170,7 +169,7 @@ public static class BotMain
         var iconPath = StageIconGetter.GetIconPath(replay.Rules.StageName);
         var iconFileName = Path.GetFileName(iconPath);
         var description = new StringBuilder();
-        if (replay.Format?.ModName != "Vanilla")
+        if (replay.Format is { IsVanilla: false })
             description.AppendLine($"This replay is from mod \"*{replay.Format?.ModName}*\".");
         // description.Append($"**{replay.Rules.GamemodeName}** match on **{replay.Rules.StageName}**.");
 
