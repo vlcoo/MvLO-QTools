@@ -199,8 +199,9 @@ public record struct ReplayPlayerInfo
                 Username = reader.ReadString(),
                 FinalObjectiveCount = reader.ReadInt32(),
                 Team = reader.ReadByte(),
-                Character = Characters[reader.ReadByte()],
             };
+            byte characterIndex = reader.ReadByte();
+            result.Character = (characterIndex < Characters.Length) ? Characters[characterIndex] : 0;
             reader.ReadInt32(); // Discard PlayerRef
         }
 
