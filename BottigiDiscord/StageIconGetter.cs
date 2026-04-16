@@ -16,6 +16,9 @@ public static class StageIconGetter
         {"Desert", "./resources/stage-icons/stage-desert.png"},
         {"Ghost House", "./resources/stage-icons/stage-ghosthouse.png"},
         {"Beach", "./resources/stage-icons/stage-beach.png"},
+        {"Giddy Sky", "./resources/stage-icons/stage-giddysky.png"},
+        {"Mushroom Valley", "./resources/stage-icons/stage-mushroomvalley.png"},
+        {"Ghostly Manor", "./resources/stage-icons/stage-ghostlymanor.png"},
     };
     
     public static string GetIconPath(string stageName)

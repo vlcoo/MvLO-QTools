@@ -9,6 +9,11 @@ public class ConsoleReplayDrawer : ReplayDrawer
 
     public override float Speed => 0f;
 
+    public override void OnBeforeFirstFrame()
+    {
+        
+    }
+
     public override unsafe void DrawFrame(Frame f)
     {
         var tiles = f.StageTiles;
@@ -16,10 +21,10 @@ public class ConsoleReplayDrawer : ReplayDrawer
         Builder.Clear();
         var stage = f.FindAsset<VersusStageData>(f.Map.UserAsset);
         if (tiles == null) return;
-        var test = new char[stage.TileDimensions.x, stage.TileDimensions.y];
+        var test = new char[stage.TileDimensions.X, stage.TileDimensions.Y];
         for (var x = 0; x < test.GetLength(0); x++) {
             for (var y = 0; y < test.GetLength(1); y++) {
-                test[x, y] = tiles[x + y * stage.TileDimensions.x].HasWorldPolygons(f) ? '#' : ' ';
+                test[x, y] = tiles[x + y * stage.TileDimensions.X].HasWorldPolygons(f) ? '#' : ' ';
             }
         }
 
@@ -27,9 +32,9 @@ public class ConsoleReplayDrawer : ReplayDrawer
         all.UseCulling = false;
         while (all.NextUnsafe(out _, out var transform)) {
             var pos = QuantumUtils.WorldToRelativeTile(f, transform->Position);
-            if (pos.x >= 0 && pos.x < test.GetLength(0)
-                           && pos.y >= 0 && pos.y < test.GetLength(1)) {
-                test[pos.x, pos.y] = 'E';
+            if (pos.X >= 0 && pos.X < test.GetLength(0)
+                           && pos.Y >= 0 && pos.Y < test.GetLength(1)) {
+                test[pos.X, pos.Y] = 'E';
             }
         }
 

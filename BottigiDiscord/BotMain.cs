@@ -171,7 +171,7 @@ public static class BotMain
         var iconFileName = Path.GetFileName(iconPath);
         var description = new StringBuilder();
         if (replay.Format?.ModName != "Vanilla")
-            description.AppendLine($"This replay is from mod \"*{replay.Format?.ModName}*\".");
+            description.AppendLine($"This replay is from the \"*{replay.Format?.ModName}*\" mod.");
         // description.Append($"**{replay.Rules.GamemodeName}** match on **{replay.Rules.StageName}**.");
 
         var embed = new EmbedBuilder

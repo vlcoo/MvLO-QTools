@@ -59,12 +59,17 @@ public class VideoReplayDrawer : ReplayDrawer
 
     public override float Speed => 1f;
 
+    public override void OnBeforeFirstFrame()
+    {
+        
+    }
+
     public override unsafe void DrawFrame(Frame f)
     {
         var stage = f.FindAsset<VersusStageData>(f.Map.UserAsset);
         var tiles = f.StageTiles;
-        _width = stage.TileDimensions.x * TileSizePixels;
-        _height = stage.TileDimensions.y * TileSizePixels;
+        _width = stage.TileDimensions.X * TileSizePixels;
+        _height = stage.TileDimensions.Y * TileSizePixels;
         
         var bmp = new SKBitmap(_width, _height);
         var g = new SKCanvas(bmp);
@@ -73,9 +78,9 @@ public class VideoReplayDrawer : ReplayDrawer
         g.DrawText($"{DrawnFramesCount}", 2, 20, _fontHeader, _textPaint);
         
         if (tiles == null) return;
-        for (var x = 0; x < stage.TileDimensions.x; x++) {
-            for (var y = 0; y < stage.TileDimensions.y; y++) {
-                var tile = tiles[x + y * stage.TileDimensions.x];
+        for (var x = 0; x < stage.TileDimensions.X; x++) {
+            for (var y = 0; y < stage.TileDimensions.Y; y++) {
+                var tile = tiles[x + y * stage.TileDimensions.X];
                 if (tile.HasWorldPolygons(f))
                 {
                     var tileAsset = (StageTile) Replay.ResourceManager.GetAsset(tile.Tile.Id);
@@ -155,7 +160,7 @@ public class VideoReplayDrawer : ReplayDrawer
     public static FPVector2 WorldToRelativeTileSmooth(VersusStageData stage, FPVector2 worldPos, int magnify = 1) {
         worldPos -= stage.TilemapWorldPosition;
         worldPos *= 2;
-        worldPos -= new FPVector2(stage.TileOrigin.x, stage.TileOrigin.y);
+        worldPos -= new FPVector2(stage.TileOrigin.X, stage.TileOrigin.Y);
         // worldPos *= magnify;
         return QuantumUtils.WrapWorld(stage, worldPos, out _);
     }

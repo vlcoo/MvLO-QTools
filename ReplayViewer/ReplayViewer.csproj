@@ -5,6 +5,10 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+        <PackageId>mvlo-qtools.replayviewer</PackageId>
+        <Title>MvLO-QTools ReplayViewer</Title>
+        <Authors>vlco_o</Authors>
+        <Description>Mario vs Luigi Online replay file simulator. Adapted from code by ipodtouch0218.</Description>
     </PropertyGroup>
 
     <ItemGroup>

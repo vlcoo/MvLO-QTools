@@ -15,6 +15,12 @@ public static class ReplayModMapper
             Header = "vcmi-RP",
             Extension = ".mvlreplay",
             ModName = "vic's Custom Match-inator",
+        },
+        new()
+        {
+            Header = "two-RP",
+            Extension = ".mvlreplay",
+            ModName = "20 Players",
         }
     ];
 }

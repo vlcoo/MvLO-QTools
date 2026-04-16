@@ -122,6 +122,9 @@ public struct GameRules
         { 280769179842433036, "Desert" },
         { 503647763446439242, "Ghost House" },
         { 372234066173501830, "Beach" },
+        { 513675025934483628, "Giddy Sky" },
+        { 413999884337175885, "Mushroom Valley" },
+        { 482788951208118018, "Ghostly Manor" },
     };
 
     private static readonly Dictionary<long, string> GamemodeNames = new()
