@@ -5,7 +5,7 @@ namespace ReplayFile;
 
 public class BinaryReplayFile
 {
-    public const int SolutionVersion = 0;
+    public const int SolutionVersion = 1;
 
     public readonly ReplayFormat? Format;
     public readonly long FileSize;
@@ -35,7 +35,7 @@ public class BinaryReplayFile
             input.CopyTo(memInput);
             input.Dispose();
         }
-        using var reader = new BinaryReader(memInput.Length > 0 ? memInput : input, Encoding.ASCII);
+        using var reader = new BinaryReader(memInput.Length > 0 ? memInput : input, Encoding.UTF8);
         FileSize = reader.BaseStream.Length;
 
         try
